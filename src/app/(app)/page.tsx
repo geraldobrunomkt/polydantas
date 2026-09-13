@@ -1,0 +1,40 @@
+import { redirect } from "next/navigation";
+import { getCurrentMember } from "@/lib/session";
+import { allowedModules, MODULE_LABELS, MODULE_PATHS } from "@/lib/permissions";
+import Link from "next/link";
+
+const DESCRIPTIONS: Record<string, string> = {
+  agenda: "Compromissos da candidata: data, hora, local e ideia de conteúdo do dia.",
+  engajamento: "Acompanhe quem comentou em cada post no grupo de engajamento.",
+  ideias: "Post-its com ideias de conteúdo, sem compromisso.",
+  admin: "Gerencie a equipe: nomes, funções e PINs.",
+};
+
+export default async function HomePage() {
+  const member = await getCurrentMember();
+  if (!member) redirect("/login");
+
+  const modules = allowedModules(member.role);
+  if (modules.length === 1) redirect(MODULE_PATHS[modules[0]]);
+
+  return (
+    <div>
+      <h1 className="text-xl font-semibold text-slate-800 mb-1">
+        Olá, {member.name.split(" ")[0]}
+      </h1>
+      <p className="text-sm text-slate-500 mb-6">O que você quer abrir?</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {modules.map((m) => (
+          <Link
+            key={m}
+            href={MODULE_PATHS[m]}
+            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-violet-300 hover:shadow-sm transition"
+          >
+            <h2 className="font-semibold text-slate-800">{MODULE_LABELS[m]}</h2>
+            <p className="text-sm text-slate-500 mt-1">{DESCRIPTIONS[m]}</p>
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+}
