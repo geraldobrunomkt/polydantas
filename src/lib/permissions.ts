@@ -17,7 +17,7 @@ export function canAccess(role: MemberRole, mod: Module): boolean {
 
 export function defaultPathFor(role: MemberRole): string {
   const mods = allowedModules(role);
-  return `/${mods[0]}`;
+  return `/painel/${mods[0]}`;
 }
 
 export const MODULE_LABELS: Record<Module, string> = {
@@ -28,8 +28,8 @@ export const MODULE_LABELS: Record<Module, string> = {
 };
 
 export const MODULE_PATHS: Record<Module, string> = {
-  agenda: "/agenda",
-  engajamento: "/engajamento",
-  ideias: "/ideias",
-  admin: "/admin",
+  agenda: "/painel/agenda",
+  engajamento: "/painel/engajamento",
+  ideias: "/painel/ideias",
+  admin: "/painel/admin",
 };

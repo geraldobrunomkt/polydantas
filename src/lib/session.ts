@@ -44,7 +44,7 @@ export async function getCurrentMember(): Promise<TeamMember | null> {
 
 export async function requireMember(mod: Module): Promise<TeamMember> {
   const member = await getCurrentMember();
-  if (!member) redirect("/login");
+  if (!member) redirect("/painel/login");
   if (!canAccess(member.role, mod)) redirect(defaultPathFor(member.role));
   return member;
 }

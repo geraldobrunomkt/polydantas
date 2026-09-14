@@ -4,7 +4,7 @@ import { db } from "@/lib/supabase";
 import { requireMember } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
-const PATH = "/agenda";
+const PATH = "/painel/agenda";
 
 function readItem(formData: FormData) {
   return {

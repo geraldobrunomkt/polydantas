@@ -9,7 +9,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const member = await getCurrentMember();
-  if (!member) redirect("/login");
+  if (!member) redirect("/painel/login");
 
   return (
     <div className="min-h-screen bg-slate-50">

@@ -5,5 +5,5 @@ import { redirect } from "next/navigation";
 
 export async function logout() {
   await clearSessionCookie();
-  redirect("/login");
+  redirect("/painel/login");
 }

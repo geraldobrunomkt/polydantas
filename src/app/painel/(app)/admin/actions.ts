@@ -6,12 +6,12 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import type { MemberRole } from "@/lib/types";
 
-const PATH = "/admin";
+const PATH = "/painel/admin";
 
 async function requireMaster() {
   const member = await getCurrentMember();
-  if (!member) redirect("/login");
-  if (member.role !== "master") redirect("/");
+  if (!member) redirect("/painel/login");
+  if (member.role !== "master") redirect("/painel");
   return member;
 }
 

@@ -71,7 +71,7 @@ export async function bootstrapMaster(
   if (error || !data) return { error: "Não foi possível criar o usuário master." };
 
   await createSessionCookie(data.id);
-  redirect("/");
+  redirect("/painel");
 }
 
 export async function setFirstPin(
@@ -98,7 +98,7 @@ export async function setFirstPin(
   if (error) return { error: "Não foi possível salvar o PIN." };
 
   await createSessionCookie(member.id);
-  redirect("/");
+  redirect("/painel");
 }
 
 export async function login(

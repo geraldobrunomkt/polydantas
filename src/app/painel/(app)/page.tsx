@@ -12,7 +12,7 @@ const DESCRIPTIONS: Record<string, string> = {
 
 export default async function HomePage() {
   const member = await getCurrentMember();
-  if (!member) redirect("/login");
+  if (!member) redirect("/painel/login");
 
   const modules = allowedModules(member.role);
   if (modules.length === 1) redirect(MODULE_PATHS[modules[0]]);

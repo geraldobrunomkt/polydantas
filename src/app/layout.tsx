@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Poly Dantas - Painel interno",
-  description: "CRM interno da campanha de Poly Dantas",
+  title: "Poly Dantas 11123",
+  description: "Poly Dantas 11123 - Deputada Estadual. Conheça os compromissos e a trajetória da candidata.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

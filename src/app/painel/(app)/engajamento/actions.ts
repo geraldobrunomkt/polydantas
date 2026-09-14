@@ -4,7 +4,7 @@ import { db } from "@/lib/supabase";
 import { requireMember } from "@/lib/session";
 import { revalidatePath } from "next/cache";
 
-const PATH = "/engajamento";
+const PATH = "/painel/engajamento";
 
 export async function addPost(formData: FormData) {
   const member = await requireMember("engajamento");
