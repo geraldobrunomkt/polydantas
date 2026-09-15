@@ -42,7 +42,7 @@ export default function Board({ ideas }: { ideas: IdeaCard[] }) {
           onChange={(e) => setText(e.target.value)}
           placeholder="Escreva sua ideia..."
           rows={2}
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex gap-2">
@@ -61,7 +61,7 @@ export default function Board({ ideas }: { ideas: IdeaCard[] }) {
           <button
             type="submit"
             disabled={isPending}
-            className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+            className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
             {isPending ? "Adicionando..." : "Adicionar post-it"}
           </button>

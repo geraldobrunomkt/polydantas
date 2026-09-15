@@ -42,7 +42,7 @@ export default function Board({
             name="name"
             required
             placeholder="Nome da pessoa"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div className="flex-1 min-w-[160px]">
@@ -53,7 +53,7 @@ export default function Board({
             name="email"
             type="email"
             placeholder="nome@exemplo.com"
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -61,7 +61,7 @@ export default function Board({
           <select
             name="role"
             defaultValue="full"
-            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           >
             {Object.entries(ROLE_LABELS)
               .filter(([role]) => role !== "master")
@@ -74,7 +74,7 @@ export default function Board({
         </div>
         <button
           disabled={isPending}
-          className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           Adicionar pessoa
         </button>
@@ -125,12 +125,12 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
             onChange={(e) => setName(e.target.value)}
             onBlur={saveName}
             onKeyDown={(e) => e.key === "Enter" && saveName()}
-            className="w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-lg border border-slate-300 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         ) : (
           <button
             onClick={() => setEditingName(true)}
-            className="font-medium text-slate-800 hover:text-violet-600 text-left"
+            className="font-medium text-slate-800 hover:text-brand-600 text-left"
             title="Clique para editar o nome"
           >
             {member.name}
@@ -146,12 +146,12 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
             onBlur={saveEmail}
             onKeyDown={(e) => e.key === "Enter" && saveEmail()}
             placeholder="nome@exemplo.com"
-            className="w-full rounded-lg border border-slate-300 px-2 py-1 text-xs mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-lg border border-slate-300 px-2 py-1 text-xs mt-1 focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         ) : (
           <button
             onClick={() => setEditingEmail(true)}
-            className="block text-xs text-slate-400 hover:text-violet-600 mt-0.5"
+            className="block text-xs text-slate-400 hover:text-brand-600 mt-0.5"
             title="Clique para editar o e-mail"
           >
             {member.email || "adicionar e-mail"}
@@ -171,7 +171,7 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
             updateMember(member.id, { role: e.target.value as MemberRole })
           )
         }
-        className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-violet-500"
+        className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
       >
         {Object.entries(ROLE_LABELS).map(([role, label]) => (
           <option key={role} value={role}>

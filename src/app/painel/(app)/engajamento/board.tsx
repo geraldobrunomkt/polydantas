@@ -25,6 +25,17 @@ export default function Board({
     return map;
   }, [checks]);
 
+  const stats = useMemo(() => {
+    const totalPosts = posts.length;
+    return roster
+      .map((r) => {
+        const commented = checks.filter((c) => c.roster_id === r.id && c.checked).length;
+        const rate = totalPosts > 0 ? commented / totalPosts : 0;
+        return { id: r.id, name: r.name, commented, totalPosts, rate };
+      })
+      .sort((a, b) => b.rate - a.rate);
+  }, [roster, checks, posts]);
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-2">
@@ -43,7 +54,7 @@ export default function Board({
           </button>
           <button
             onClick={() => setShowNewPost((v) => !v)}
-            className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700"
+            className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
           >
             + Novo post
           </button>
@@ -51,7 +62,7 @@ export default function Board({
       </div>
 
       {showRoster && (
-        <RosterManager roster={roster} onDone={() => setShowRoster(false)} />
+        <RosterManager roster={roster} stats={stats} onDone={() => setShowRoster(false)} />
       )}
 
       {showNewPost && <NewPostForm onDone={() => setShowNewPost(false)} />}
@@ -76,23 +87,67 @@ export default function Board({
   );
 }
 
+type MemberStat = {
+  id: string;
+  name: string;
+  commented: number;
+  totalPosts: number;
+  rate: number;
+};
+
 function RosterManager({
   roster,
+  stats,
   onDone,
 }: {
   roster: EngagementRosterMember[];
+  stats: MemberStat[];
   onDone: () => void;
 }) {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-5">
+      <div className="flex items-center justify-between">
         <h2 className="font-medium text-slate-700">Pessoas do grupo de engajamento</h2>
         <button onClick={onDone} className="text-sm text-slate-400 hover:text-slate-600">
           Fechar
         </button>
       </div>
+
+      {stats.length > 0 && stats[0].totalPosts > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">
+            Quem mais e quem menos comenta
+          </h3>
+          <div className="space-y-1.5">
+            {stats.map((s) => {
+              const pct = Math.round(s.rate * 100);
+              const needsAttention = s.rate < 0.5;
+              return (
+                <div key={s.id} className="flex items-center gap-3">
+                  <span className="w-28 shrink-0 text-sm text-slate-700 truncate">{s.name}</span>
+                  <div className="flex-1 h-2 rounded-full bg-slate-100 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full ${needsAttention ? "bg-amber-400" : "bg-green-500"}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="w-20 shrink-0 text-xs text-slate-500 text-right">
+                    {s.commented}/{s.totalPosts} ({pct}%)
+                  </span>
+                  {needsAttention && (
+                    <span title="Precisa de atenção" className="text-amber-500 text-xs">
+                      ⚠️
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       <form
         action={(fd) => startTransition(() => addRosterMember(fd))}
         className="flex gap-2 mb-3"
@@ -101,11 +156,11 @@ function RosterManager({
           name="name"
           placeholder="Nome da pessoa"
           required
-          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
         <button
           disabled={isPending}
-          className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           Adicionar
         </button>
@@ -153,26 +208,26 @@ function NewPostForm({ onDone }: { onDone: () => void }) {
         name="title"
         placeholder="Título / descrição do post"
         required
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       <input
         name="link"
         type="url"
         placeholder="Link do post"
         required
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       <input
         name="post_date"
         type="date"
         defaultValue={today}
-        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+        className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
       />
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isPending ? "Salvando..." : "Salvar post"}
         </button>
@@ -211,7 +266,7 @@ function PostCard({
             href={post.link}
             target="_blank"
             rel="noreferrer"
-            className="text-sm text-violet-600 hover:underline break-all"
+            className="text-sm text-brand-600 hover:underline break-all"
           >
             {post.link}
           </a>
@@ -244,21 +299,33 @@ function PostCard({
           Cadastre pessoas em &quot;Gerenciar pessoas&quot; para começar a marcar.
         </p>
       ) : (
-        <div className={`mt-3 flex flex-wrap gap-2 ${isPending ? "opacity-60" : ""}`}>
+        <div className={`mt-4 flex flex-wrap gap-x-4 gap-y-3 ${isPending ? "opacity-60" : ""}`}>
           {roster.map((r) => {
             const checked = !!checkedMap.get(r.id);
+            const initials = r.name
+              .split(" ")
+              .slice(0, 2)
+              .map((p) => p[0]?.toUpperCase())
+              .join("");
             return (
               <button
                 key={r.id}
                 onClick={() => startTransition(() => toggleCheck(post.id, r.id, !checked))}
-                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm transition ${
-                  checked
-                    ? "border-green-300 bg-green-50 text-green-700"
-                    : "border-slate-200 text-slate-600 hover:border-slate-300"
-                }`}
+                title={checked ? `${r.name} · comentou` : `${r.name} · marcar como comentou`}
+                className="flex flex-col items-center gap-1 w-16 group"
               >
-                <span>{checked ? "✅" : "⬜️"}</span>
-                {r.name}
+                <span
+                  className={`h-10 w-10 rounded-full flex items-center justify-center text-xs font-semibold border-2 transition ${
+                    checked
+                      ? "bg-green-500 border-green-500 text-white"
+                      : "bg-slate-100 border-slate-200 text-slate-400 group-hover:border-slate-300"
+                  }`}
+                >
+                  {checked ? "✓" : initials}
+                </span>
+                <span className="text-[11px] text-slate-500 text-center leading-tight truncate w-full">
+                  {r.name.split(" ")[0]}
+                </span>
               </button>
             );
           })}

@@ -35,7 +35,7 @@ export default function Nav({
       <header className="sticky top-0 z-10 bg-white/90 backdrop-blur border-b border-slate-200">
         <div className="mx-auto max-w-5xl px-4 py-3 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="font-bold text-violet-900">Poly Dantas</span>
+            <span className="font-bold text-brand-900">Poly Dantas</span>
             <span className="hidden sm:inline text-xs text-slate-400">· painel interno</span>
           </div>
 
@@ -46,7 +46,7 @@ export default function Nav({
                 href={MODULE_PATHS[m]}
                 className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition ${
                   pathname === MODULE_PATHS[m]
-                    ? "bg-violet-100 text-violet-800"
+                    ? "bg-brand-100 text-brand-800"
                     : "text-slate-600 hover:bg-slate-100"
                 }`}
               >
@@ -83,7 +83,7 @@ export default function Nav({
                 key={m}
                 href={MODULE_PATHS[m]}
                 className={`flex flex-col items-center justify-center gap-0.5 py-2.5 text-[11px] font-medium transition ${
-                  active ? "text-violet-700" : "text-slate-400"
+                  active ? "text-brand-700" : "text-slate-400"
                 }`}
               >
                 <span className={`text-lg leading-none transition ${active ? "scale-110" : ""}`}>

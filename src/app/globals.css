@@ -10,6 +10,20 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* Marca Poly Dantas: azul como escala principal, ciano e amarelo como acento */
+  --color-brand-50: #eef7ff;
+  --color-brand-100: #d9edff;
+  --color-brand-200: #b3daff;
+  --color-brand-300: #7fc2ff;
+  --color-brand-400: #47a4ff;
+  --color-brand-500: #1f8cff;
+  --color-brand-600: #007eff;
+  --color-brand-700: #0063cc;
+  --color-brand-800: #004a99;
+  --color-brand-900: #073568;
+  --color-cyan-accent: #00ffe4;
+  --color-yellow-accent: #fff000;
 }
 
 body {

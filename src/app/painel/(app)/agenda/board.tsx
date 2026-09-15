@@ -3,6 +3,8 @@
 import { useMemo, useState, useTransition } from "react";
 import type { AgendaItem } from "@/lib/types";
 import { addItem, updateItem, deleteItem } from "./actions";
+import { organizeAgendaText } from "./ai-actions";
+import type { ChatTurn } from "@/lib/gemini";
 
 function formatDateHeading(dateStr: string) {
   const date = new Date(dateStr + "T00:00:00");
@@ -13,6 +15,13 @@ function formatDateHeading(dateStr: string) {
 
 export default function Board({ items }: { items: AgendaItem[] }) {
   const [showNew, setShowNew] = useState(false);
+  const [draft, setDraft] = useState<Partial<AgendaItem>>({});
+  const [formKey, setFormKey] = useState(0);
+
+  function closeNew() {
+    setShowNew(false);
+    setDraft({});
+  }
 
   const groups = useMemo(() => {
     const map = new Map<string, AgendaItem[]>();
@@ -32,21 +41,31 @@ export default function Board({ items }: { items: AgendaItem[] }) {
         </div>
         <button
           onClick={() => setShowNew((v) => !v)}
-          className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700"
+          className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
         >
           + Novo compromisso
         </button>
       </div>
 
       {showNew && (
-        <ItemForm
-          onSubmit={async (fd) => {
-            await addItem(fd);
-            setShowNew(false);
-          }}
-          onCancel={() => setShowNew(false)}
-          submitLabel="Salvar compromisso"
-        />
+        <div className="space-y-3">
+          <AiAssist
+            onApply={(patch) => {
+              setDraft((d) => ({ ...d, ...patch }));
+              setFormKey((k) => k + 1);
+            }}
+          />
+          <ItemForm
+            key={formKey}
+            item={draft}
+            onSubmit={async (fd) => {
+              await addItem(fd);
+              closeNew();
+            }}
+            onCancel={closeNew}
+            submitLabel="Salvar compromisso"
+          />
+        </div>
       )}
 
       {groups.length === 0 && (
@@ -58,7 +77,7 @@ export default function Board({ items }: { items: AgendaItem[] }) {
       <div className="space-y-6">
         {groups.map(([date, dayItems]) => (
           <div key={date}>
-            <h2 className="text-sm font-semibold text-violet-700 mb-2">
+            <h2 className="text-sm font-semibold text-brand-700 mb-2">
               {formatDateHeading(date)}
             </h2>
             <div className="space-y-3">
@@ -104,7 +123,7 @@ function ItemCard({ item }: { item: AgendaItem }) {
             <p className="text-sm text-slate-600 mt-1 whitespace-pre-wrap">{item.description}</p>
           )}
           {item.content_idea && (
-            <div className="mt-2 rounded-lg bg-violet-50 border border-violet-100 px-3 py-2 text-sm text-violet-800">
+            <div className="mt-2 rounded-lg bg-brand-50 border border-brand-100 px-3 py-2 text-sm text-brand-800">
               💡 <strong>Ideia de conteúdo:</strong> {item.content_idea}
             </div>
           )}
@@ -112,7 +131,7 @@ function ItemCard({ item }: { item: AgendaItem }) {
         <div className="flex gap-2 text-sm">
           <button
             onClick={() => setEditing(true)}
-            className="text-slate-400 hover:text-violet-600"
+            className="text-slate-400 hover:text-brand-600"
           >
             editar
           </button>
@@ -134,7 +153,7 @@ function ItemForm({
   onCancel,
   submitLabel,
 }: {
-  item?: AgendaItem;
+  item?: Partial<AgendaItem>;
   onSubmit: (fd: FormData) => Promise<void>;
   onCancel: () => void;
   submitLabel: string;
@@ -154,7 +173,7 @@ function ItemForm({
             type="date"
             defaultValue={item?.item_date}
             required
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
@@ -163,7 +182,7 @@ function ItemForm({
             name="item_time"
             type="time"
             defaultValue={item?.item_time?.slice(0, 5)}
-            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
       </div>
@@ -173,7 +192,7 @@ function ItemForm({
           name="location"
           defaultValue={item?.location ?? ""}
           placeholder="Ex: Praça Central"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
       <div>
@@ -183,7 +202,7 @@ function ItemForm({
           defaultValue={item?.title ?? ""}
           required
           placeholder="Ex: Caminhada no centro"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
       <div>
@@ -193,7 +212,7 @@ function ItemForm({
           defaultValue={item?.description ?? ""}
           rows={2}
           placeholder="Detalhes da programação"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
       <div>
@@ -205,14 +224,14 @@ function ItemForm({
           defaultValue={item?.content_idea ?? ""}
           rows={2}
           placeholder="O que gravar/postar nesse compromisso"
-          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
       <div className="flex gap-2">
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-lg bg-violet-600 px-3 py-2 text-sm font-medium text-white hover:bg-violet-700 disabled:opacity-50"
+          className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
         >
           {isPending ? "Salvando..." : submitLabel}
         </button>
@@ -225,5 +244,96 @@ function ItemForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function AiAssist({
+  onApply,
+}: {
+  onApply: (patch: Partial<AgendaItem>) => void;
+}) {
+  const [history, setHistory] = useState<ChatTurn[]>([]);
+  const [message, setMessage] = useState("");
+  const [replies, setReplies] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function send() {
+    const userMsg = message.trim();
+    if (!userMsg || isPending) return;
+    setMessage("");
+    setError(null);
+    startTransition(async () => {
+      const result = await organizeAgendaText(history, userMsg);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setHistory((h) => [
+        ...h,
+        { role: "user", text: userMsg },
+        { role: "model", text: JSON.stringify(result) },
+      ]);
+      setReplies((r) => [...r, result.reply]);
+      onApply({
+        item_date: result.item_date ?? undefined,
+        item_time: result.item_time ?? undefined,
+        location: result.location ?? undefined,
+        title: result.title ?? undefined,
+        description: result.description ?? undefined,
+        content_idea: result.content_idea ?? undefined,
+      });
+    });
+  }
+
+  return (
+    <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-lg">✨</span>
+        <h3 className="font-medium text-brand-900 text-sm">Escreva corrido, a IA organiza</h3>
+      </div>
+
+      {replies.length > 0 && (
+        <div className="space-y-1.5">
+          {replies.map((r, i) => (
+            <p
+              key={i}
+              className="text-sm text-brand-800 bg-white rounded-lg px-3 py-2 border border-brand-100"
+            >
+              {r}
+            </p>
+          ))}
+        </div>
+      )}
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <div className="flex gap-2">
+        <textarea
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              send();
+            }
+          }}
+          rows={2}
+          placeholder="Ex: quinta as 15h na praça central, caminhada com a comunidade, gravar reels perguntando sobre saúde pública"
+          className="flex-1 rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+        <button
+          type="button"
+          onClick={send}
+          disabled={isPending || !message.trim()}
+          className="rounded-lg bg-brand-600 px-4 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+        >
+          {isPending ? "..." : "Organizar"}
+        </button>
+      </div>
+      <p className="text-xs text-brand-700/70">
+        Os campos abaixo já vêm preenchidos — revise antes de salvar.
+      </p>
+    </div>
   );
 }

@@ -41,10 +41,10 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-b from-violet-50 to-white px-5 py-10">
+    <div className="min-h-[100dvh] flex flex-col items-center justify-center bg-gradient-to-b from-brand-50 to-white px-5 py-10">
       <div className="w-full max-w-xs">
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-violet-900">Poly Dantas</h1>
+          <h1 className="text-2xl font-bold text-brand-900">Poly Dantas</h1>
           <p className="text-sm text-slate-500 mt-1">Painel interno da equipe</p>
         </div>
 
@@ -60,7 +60,7 @@ export default function LoginPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Ex: Ana Camila"
-                  className="w-full rounded-xl border border-slate-300 px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-violet-500"
+                  className="w-full rounded-xl border border-slate-300 px-4 py-3.5 text-base focus:outline-none focus:ring-2 focus:ring-brand-500"
                   required
                 />
               </div>
@@ -68,7 +68,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isPending}
-                className="w-full rounded-xl bg-violet-600 text-white py-3.5 font-medium text-base active:scale-[0.98] transition hover:bg-violet-700 disabled:opacity-50"
+                className="w-full rounded-xl bg-brand-600 text-white py-3.5 font-medium text-base active:scale-[0.98] transition hover:bg-brand-700 disabled:opacity-50"
               >
                 {isPending ? "Verificando..." : "Continuar"}
               </button>
@@ -188,7 +188,7 @@ function PinStep({
             key={i}
             className={`h-3 w-3 rounded-full border-2 transition-all ${
               i < pin.length
-                ? "bg-violet-600 border-violet-600 scale-110"
+                ? "bg-brand-600 border-brand-600 scale-110"
                 : "border-slate-300"
             }`}
           />
@@ -225,7 +225,7 @@ function PinStep({
         type="button"
         onClick={confirm}
         disabled={pending || pin.length < PIN_MIN}
-        className="w-full rounded-xl bg-violet-600 text-white py-3.5 font-medium text-base active:scale-[0.98] transition hover:bg-violet-700 disabled:opacity-40"
+        className="w-full rounded-xl bg-brand-600 text-white py-3.5 font-medium text-base active:scale-[0.98] transition hover:bg-brand-700 disabled:opacity-40"
       >
         {pending ? "Entrando..." : "Confirmar"}
       </button>
@@ -244,7 +244,7 @@ function PadButton({
     <button
       type="button"
       onClick={onClick}
-      className="rounded-2xl bg-slate-50 py-3.5 text-lg font-semibold text-slate-700 active:bg-violet-100 active:text-violet-700 transition"
+      className="rounded-2xl bg-slate-50 py-3.5 text-lg font-semibold text-slate-700 active:bg-brand-100 active:text-brand-700 transition"
     >
       {children}
     </button>
