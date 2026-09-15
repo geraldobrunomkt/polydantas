@@ -14,7 +14,7 @@ export default async function AppLayout({
   return (
     <div className="min-h-screen bg-slate-50">
       <Nav memberName={member.name} modules={allowedModules(member.role)} />
-      <main className="mx-auto max-w-5xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-5xl px-4 py-6 pb-24 sm:pb-6">{children}</main>
     </div>
   );
 }

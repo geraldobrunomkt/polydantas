@@ -45,6 +45,17 @@ export default function Board({
             className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
           />
         </div>
+        <div className="flex-1 min-w-[160px]">
+          <label className="block text-xs font-medium text-slate-500 mb-1">
+            E-mail <span className="text-slate-300">(opcional)</span>
+          </label>
+          <input
+            name="email"
+            type="email"
+            placeholder="nome@exemplo.com"
+            className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500"
+          />
+        </div>
         <div>
           <label className="block text-xs font-medium text-slate-500 mb-1">Função</label>
           <select
@@ -85,7 +96,9 @@ export default function Board({
 
 function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) {
   const [editingName, setEditingName] = useState(false);
+  const [editingEmail, setEditingEmail] = useState(false);
   const [name, setName] = useState(member.name);
+  const [email, setEmail] = useState(member.email ?? "");
   const [isPending, startTransition] = useTransition();
 
   function saveName() {
@@ -93,6 +106,13 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
       startTransition(() => updateMember(member.id, { name: name.trim() }));
     }
     setEditingName(false);
+  }
+
+  function saveEmail() {
+    if (email.trim() !== (member.email ?? "")) {
+      startTransition(() => updateMember(member.id, { email: email.trim() }));
+    }
+    setEditingEmail(false);
   }
 
   return (
@@ -115,6 +135,26 @@ function MemberRow({ member, isSelf }: { member: TeamMember; isSelf: boolean }) 
           >
             {member.name}
             {isSelf && <span className="text-xs text-slate-400 ml-1">(você)</span>}
+          </button>
+        )}
+        {editingEmail ? (
+          <input
+            autoFocus
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            onBlur={saveEmail}
+            onKeyDown={(e) => e.key === "Enter" && saveEmail()}
+            placeholder="nome@exemplo.com"
+            className="w-full rounded-lg border border-slate-300 px-2 py-1 text-xs mt-1 focus:outline-none focus:ring-2 focus:ring-violet-500"
+          />
+        ) : (
+          <button
+            onClick={() => setEditingEmail(true)}
+            className="block text-xs text-slate-400 hover:text-violet-600 mt-0.5"
+            title="Clique para editar o e-mail"
+          >
+            {member.email || "adicionar e-mail"}
           </button>
         )}
         <div className="text-xs text-slate-400 mt-0.5">

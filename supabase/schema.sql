@@ -15,11 +15,14 @@ end $$;
 create table if not exists team_members (
   id uuid primary key default gen_random_uuid(),
   name text not null unique,
+  email text,
   role member_role not null default 'full',
   pin_hash text,
   active boolean not null default true,
   created_at timestamptz not null default now()
 );
+
+alter table team_members add column if not exists email text;
 
 -- Posts monitorados no grupo de engajamento
 create table if not exists engagement_posts (

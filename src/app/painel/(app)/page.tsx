@@ -28,7 +28,7 @@ export default async function HomePage() {
           <Link
             key={m}
             href={MODULE_PATHS[m]}
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-violet-300 hover:shadow-sm transition"
+            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-violet-300 hover:shadow-sm active:scale-[0.98] transition"
           >
             <h2 className="font-semibold text-slate-800">{MODULE_LABELS[m]}</h2>
             <p className="text-sm text-slate-500 mt-1">{DESCRIPTIONS[m]}</p>

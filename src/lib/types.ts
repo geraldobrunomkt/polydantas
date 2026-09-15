@@ -5,6 +5,7 @@ export type Module = "engajamento" | "agenda" | "ideias" | "admin";
 export interface TeamMember {
   id: string;
   name: string;
+  email: string | null;
   role: MemberRole;
   pin_hash: string | null;
   active: boolean;

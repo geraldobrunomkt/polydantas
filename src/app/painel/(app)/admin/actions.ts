@@ -18,10 +18,13 @@ async function requireMaster() {
 export async function addMember(formData: FormData) {
   await requireMaster();
   const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
   const role = String(formData.get("role") ?? "full") as MemberRole;
   if (!name) return { error: "Digite um nome." };
 
-  const { error } = await db.from("team_members").insert({ name, role, active: true });
+  const { error } = await db
+    .from("team_members")
+    .insert({ name, email: email || null, role, active: true });
   if (error) return { error: "Já existe alguém com esse nome." };
 
   revalidatePath(PATH);
@@ -30,11 +33,12 @@ export async function addMember(formData: FormData) {
 
 export async function updateMember(
   id: string,
-  data: { name?: string; role?: MemberRole }
+  data: { name?: string; email?: string; role?: MemberRole }
 ) {
   await requireMaster();
   const patch: Record<string, string> = {};
   if (data.name?.trim()) patch.name = data.name.trim();
+  if (data.email !== undefined) patch.email = data.email.trim();
   if (data.role) patch.role = data.role;
   if (Object.keys(patch).length === 0) return;
 

@@ -7,7 +7,6 @@ import { defaultPathFor } from "@/lib/permissions";
 import { redirect } from "next/navigation";
 
 export type NameCheckResult =
-  | { status: "bootstrap" }
   | { status: "not_found" }
   | { status: "needs_pin"; name: string }
   | { status: "has_pin"; name: string }
@@ -18,60 +17,24 @@ function normalizeName(name: string): string {
 }
 
 const CONNECTION_ERROR =
-  "Não foi possível conectar ao banco de dados. Verifique se o Supabase já foi configurado no .env.local.";
+  "Não foi possível conectar ao banco de dados.";
 
 export async function checkName(rawName: string): Promise<NameCheckResult> {
   const name = normalizeName(rawName);
   if (!name) return { status: "not_found" };
 
-  const { count, error: countError } = await db
-    .from("team_members")
-    .select("*", { count: "exact", head: true });
-
-  if (countError) return { status: "error", message: CONNECTION_ERROR };
-
-  if (!count || count === 0) {
-    return { status: "bootstrap" };
-  }
-
-  const { data } = await db
+  const { data, error } = await db
     .from("team_members")
     .select("name, pin_hash, active")
     .ilike("name", name)
     .maybeSingle();
 
+  if (error) return { status: "error", message: CONNECTION_ERROR };
   if (!data || !data.active) return { status: "not_found" };
 
   return data.pin_hash
     ? { status: "has_pin", name: data.name }
     : { status: "needs_pin", name: data.name };
-}
-
-export async function bootstrapMaster(
-  rawName: string,
-  pin: string
-): Promise<{ error?: string }> {
-  const name = normalizeName(rawName);
-  if (!name) return { error: "Digite seu nome." };
-  if (!/^\d{4,6}$/.test(pin)) return { error: "O PIN deve ter de 4 a 6 números." };
-
-  const { count } = await db
-    .from("team_members")
-    .select("*", { count: "exact", head: true });
-  if (count && count > 0) {
-    return { error: "Já existe um administrador cadastrado. Faça login normalmente." };
-  }
-
-  const { data, error } = await db
-    .from("team_members")
-    .insert({ name, role: "master", pin_hash: hashPin(pin), active: true })
-    .select("id")
-    .single();
-
-  if (error || !data) return { error: "Não foi possível criar o usuário master." };
-
-  await createSessionCookie(data.id);
-  redirect("/painel");
 }
 
 export async function setFirstPin(
