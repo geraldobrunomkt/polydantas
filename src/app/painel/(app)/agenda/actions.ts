@@ -40,3 +40,25 @@ export async function deleteItem(id: string) {
   await db.from("agenda_items").delete().eq("id", id);
   revalidatePath(PATH);
 }
+
+export type BulkItem = {
+  item_date: string;
+  item_time: string | null;
+  location: string | null;
+  title: string;
+  description: string | null;
+  content_idea: string | null;
+};
+
+export async function addItemsBulk(items: BulkItem[]) {
+  const member = await requireMember("agenda");
+  const valid = items.filter((i) => i.title.trim() && i.item_date);
+  if (valid.length === 0) return { error: "Nenhum compromisso válido para salvar." };
+
+  const rows = valid.map((i) => ({ ...i, created_by: member.id }));
+  const { error } = await db.from("agenda_items").insert(rows);
+  if (error) return { error: "Não foi possível salvar os compromissos." };
+
+  revalidatePath(PATH);
+  return { saved: valid.length };
+}

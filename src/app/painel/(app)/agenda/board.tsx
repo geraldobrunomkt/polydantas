@@ -2,8 +2,8 @@
 
 import { useMemo, useState, useTransition } from "react";
 import type { AgendaItem } from "@/lib/types";
-import { addItem, updateItem, deleteItem } from "./actions";
-import { organizeAgendaText } from "./ai-actions";
+import { addItem, updateItem, deleteItem, addItemsBulk } from "./actions";
+import { organizeAgendaText, organizeAgendaBulk, type AgendaItemDraft } from "./ai-actions";
 import type { ChatTurn } from "@/lib/gemini";
 
 function formatDateHeading(dateStr: string) {
@@ -15,6 +15,7 @@ function formatDateHeading(dateStr: string) {
 
 export default function Board({ items }: { items: AgendaItem[] }) {
   const [showNew, setShowNew] = useState(false);
+  const [showBulk, setShowBulk] = useState(false);
   const [draft, setDraft] = useState<Partial<AgendaItem>>({});
   const [formKey, setFormKey] = useState(0);
 
@@ -39,13 +40,23 @@ export default function Board({ items }: { items: AgendaItem[] }) {
           <h1 className="text-xl font-semibold text-slate-800">Agenda da semana</h1>
           <p className="text-sm text-slate-500">Compromissos, local e ideia de conteúdo do dia</p>
         </div>
-        <button
-          onClick={() => setShowNew((v) => !v)}
-          className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
-        >
-          + Novo compromisso
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowBulk((v) => !v)}
+            className="rounded-lg border border-brand-300 bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-100"
+          >
+            ✨ Importar semana com IA
+          </button>
+          <button
+            onClick={() => setShowNew((v) => !v)}
+            className="rounded-lg bg-brand-600 px-3 py-2 text-sm font-medium text-white hover:bg-brand-700"
+          >
+            + Novo compromisso
+          </button>
+        </div>
       </div>
+
+      {showBulk && <BulkImport onDone={() => setShowBulk(false)} />}
 
       {showNew && (
         <div className="space-y-3">
@@ -244,6 +255,200 @@ function ItemForm({
         </button>
       </div>
     </form>
+  );
+}
+
+function BulkImport({ onDone }: { onDone: () => void }) {
+  const [text, setText] = useState("");
+  const [drafts, setDrafts] = useState<AgendaItemDraft[] | null>(null);
+  const [reply, setReply] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [saveMsg, setSaveMsg] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
+
+  function organize() {
+    if (!text.trim() || isPending) return;
+    setError(null);
+    setSaveMsg(null);
+    startTransition(async () => {
+      const result = await organizeAgendaBulk(text);
+      if ("error" in result) {
+        setError(result.error);
+        return;
+      }
+      setDrafts(result.items);
+      setReply(result.reply);
+    });
+  }
+
+  function updateDraft(index: number, patch: Partial<AgendaItemDraft>) {
+    setDrafts((cur) => cur?.map((d, i) => (i === index ? { ...d, ...patch } : d)) ?? cur);
+  }
+
+  function removeDraft(index: number) {
+    setDrafts((cur) => cur?.filter((_, i) => i !== index) ?? cur);
+  }
+
+  function saveAll() {
+    if (!drafts || drafts.length === 0 || isPending) return;
+    startTransition(async () => {
+      const result = await addItemsBulk(drafts);
+      if (result?.error) {
+        setError(result.error);
+        return;
+      }
+      setSaveMsg(`${result?.saved ?? 0} compromissos salvos na agenda.`);
+      setDrafts(null);
+      setText("");
+      setTimeout(onDone, 1200);
+    });
+  }
+
+  return (
+    <div className="rounded-2xl border border-brand-200 bg-brand-50/60 p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-lg">✨</span>
+        <h3 className="font-medium text-brand-900 text-sm">
+          Cole ou escreva a agenda inteira da semana
+        </h3>
+      </div>
+
+      {!drafts && (
+        <>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            rows={6}
+            placeholder={
+              "Ex:\nSegunda dia 22, 9h reunião com apoiadores no bairro Alecrim.\n" +
+              "Terça de manhã visita a feira do Passo da Pátria, gravar reels.\n" +
+              "Quinta às 15h caminhada na praça central..."
+            }
+            className="w-full rounded-lg border border-brand-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          {error && <p className="text-sm text-red-600">{error}</p>}
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={organize}
+              disabled={isPending || !text.trim()}
+              className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+            >
+              {isPending ? "Organizando..." : "Organizar semana"}
+            </button>
+            <button
+              type="button"
+              onClick={onDone}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
+            >
+              Cancelar
+            </button>
+          </div>
+        </>
+      )}
+
+      {drafts && (
+        <div className="space-y-3">
+          {reply && (
+            <p className="text-sm text-brand-800 bg-white rounded-lg px-3 py-2 border border-brand-100">
+              {reply}
+            </p>
+          )}
+          {saveMsg && <p className="text-sm text-green-700">{saveMsg}</p>}
+          {error && <p className="text-sm text-red-600">{error}</p>}
+
+          {drafts.length === 0 ? (
+            <p className="text-sm text-slate-500">
+              Nenhum compromisso identificado. Volte e tente descrever de novo.
+            </p>
+          ) : (
+            <div className="space-y-2">
+              {drafts.map((d, i) => (
+                <DraftRow
+                  key={i}
+                  draft={d}
+                  onChange={(patch) => updateDraft(i, patch)}
+                  onRemove={() => removeDraft(i)}
+                />
+              ))}
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            {drafts.length > 0 && (
+              <button
+                type="button"
+                onClick={saveAll}
+                disabled={isPending}
+                className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
+              >
+                {isPending ? "Salvando..." : `Salvar ${drafts.length} compromissos`}
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                setDrafts(null);
+                setReply(null);
+              }}
+              className="rounded-lg px-3 py-2 text-sm font-medium text-slate-500 hover:bg-slate-100"
+            >
+              Voltar e reescrever
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DraftRow({
+  draft,
+  onChange,
+  onRemove,
+}: {
+  draft: AgendaItemDraft;
+  onChange: (patch: Partial<AgendaItemDraft>) => void;
+  onRemove: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-slate-200 bg-white p-3 space-y-2">
+      <div className="grid grid-cols-2 gap-2">
+        <input
+          type="date"
+          value={draft.item_date}
+          onChange={(e) => onChange({ item_date: e.target.value })}
+          className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+        <input
+          type="time"
+          value={draft.item_time?.slice(0, 5) ?? ""}
+          onChange={(e) => onChange({ item_time: e.target.value || null })}
+          className="rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        />
+      </div>
+      <input
+        value={draft.title}
+        onChange={(e) => onChange({ title: e.target.value })}
+        placeholder="Título"
+        className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-brand-500"
+      />
+      <input
+        value={draft.location ?? ""}
+        onChange={(e) => onChange({ location: e.target.value || null })}
+        placeholder="Local"
+        className="w-full rounded-lg border border-slate-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+      />
+      <div className="flex justify-end">
+        <button
+          type="button"
+          onClick={onRemove}
+          className="text-xs text-slate-400 hover:text-red-600"
+        >
+          remover
+        </button>
+      </div>
+    </div>
   );
 }
 
