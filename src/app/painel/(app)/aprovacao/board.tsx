@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState, useTransition } from "react";
 import type { ContentPost, ContentPostFile, MemberRole } from "@/lib/types";
-import { submitPost, reviewPost, schedulePost, deletePost } from "./actions";
+import { submitPost, reviewPost, schedulePost, deletePost, freeUpSpace } from "./actions";
 
 type FileWithUrl = ContentPostFile & { url: string };
 
@@ -172,6 +172,8 @@ function PostRow({
   onOpen: () => void;
 }) {
   const cover = files[0];
+  const [isPending, startTransition] = useTransition();
+  const [freed, setFreed] = useState(false);
   return (
     <div className="rounded-2xl border border-slate-200 bg-white p-3 flex gap-3 items-center">
       <button onClick={onOpen} className="shrink-0 h-16 w-16 rounded-lg overflow-hidden bg-slate-100">
@@ -210,6 +212,25 @@ function PostRow({
           Agendar
         </button>
       )}
+      {(post.status === "scheduled" || post.status === "published") &&
+        canSchedule &&
+        (freed || files.length === 0 ? (
+          <span className="shrink-0 text-xs text-slate-300">espaço liberado</span>
+        ) : (
+          <button
+            disabled={isPending}
+            onClick={() =>
+              startTransition(async () => {
+                await freeUpSpace(post.id);
+                setFreed(true);
+              })
+            }
+            title="Apaga só o arquivo (já publicado), mantém o histórico"
+            className="shrink-0 rounded-lg border border-slate-200 px-3 py-2 text-xs font-medium text-slate-500 hover:bg-slate-100 disabled:opacity-50"
+          >
+            🗑️ Liberar espaço
+          </button>
+        ))}
     </div>
   );
 }

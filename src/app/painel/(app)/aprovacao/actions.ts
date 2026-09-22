@@ -74,7 +74,35 @@ export async function reviewPost(id: string, approve: boolean, note?: string) {
     })
     .eq("id", id);
 
+  // Reprovado nunca vai ser publicado - libera o espaço no Storage na hora.
+  if (!approve) await removeFiles(id);
+
   revalidatePath(PATH);
+}
+
+async function removeFiles(postId: string) {
+  const { data: files } = await db
+    .from("content_post_files")
+    .select("id, storage_path")
+    .eq("post_id", postId);
+  if (!files || files.length === 0) return 0;
+  await db.storage.from(BUCKET).remove(files.map((f) => f.storage_path));
+  await db.from("content_post_files").delete().eq("post_id", postId);
+  return files.length;
+}
+
+/**
+ * Apaga só os arquivos de um post já agendado/publicado, mantendo o registro
+ * (legenda, quando foi publicado etc.) no histórico. Não é automático de
+ * propósito: o Buffer pode buscar a mídia só na hora exata de publicar, então
+ * apagar cedo demais arriscaria quebrar um agendamento que ainda não saiu.
+ * Use depois de confirmar que o post já foi ao ar.
+ */
+export async function freeUpSpace(id: string): Promise<{ freed: number }> {
+  await requireMember("aprovacao");
+  const freed = await removeFiles(id);
+  revalidatePath(PATH);
+  return { freed };
 }
 
 export async function schedulePost(
@@ -129,13 +157,7 @@ export async function schedulePost(
 
 export async function deletePost(id: string) {
   await requireMember("aprovacao");
-  const { data: files } = await db
-    .from("content_post_files")
-    .select("storage_path")
-    .eq("post_id", id);
-  if (files && files.length > 0) {
-    await db.storage.from(BUCKET).remove(files.map((f) => f.storage_path));
-  }
+  await removeFiles(id);
   await db.from("content_posts").delete().eq("id", id);
   revalidatePath(PATH);
 }
