@@ -1,10 +1,11 @@
 import type { Module, MemberRole } from "./types";
 
 const ROLE_MODULES: Record<MemberRole, Module[]> = {
-  master: ["agenda", "engajamento", "ideias", "admin"],
-  full: ["agenda", "engajamento", "ideias"],
+  master: ["agenda", "engajamento", "ideias", "aprovacao", "admin"],
+  full: ["agenda", "engajamento", "ideias", "aprovacao"],
   engagement_only: ["engajamento"],
   agenda_only: ["agenda"],
+  approval_only: ["aprovacao"],
 };
 
 export function allowedModules(role: MemberRole): Module[] {
@@ -24,6 +25,7 @@ export const MODULE_LABELS: Record<Module, string> = {
   agenda: "Agenda da semana",
   engajamento: "Monitoramento de engajamento",
   ideias: "Banco de ideias",
+  aprovacao: "Aprovação de posts",
   admin: "Administração",
 };
 
@@ -31,5 +33,6 @@ export const MODULE_PATHS: Record<Module, string> = {
   agenda: "/painel/agenda",
   engajamento: "/painel/engajamento",
   ideias: "/painel/ideias",
+  aprovacao: "/painel/aprovacao",
   admin: "/painel/admin",
 };

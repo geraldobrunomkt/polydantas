@@ -6,7 +6,13 @@
 create extension if not exists "pgcrypto";
 
 do $$ begin
-  create type member_role as enum ('master', 'full', 'engagement_only', 'agenda_only');
+  create type member_role as enum ('master', 'full', 'engagement_only', 'agenda_only', 'approval_only');
+exception
+  when duplicate_object then null;
+end $$;
+
+do $$ begin
+  alter type member_role add value if not exists 'approval_only';
 exception
   when duplicate_object then null;
 end $$;
@@ -75,9 +81,44 @@ create table if not exists idea_cards (
   created_at timestamptz not null default now()
 );
 
+-- Aprovacao de posts (Instagram/TikTok, agendados via Buffer)
+do $$ begin
+  create type post_status as enum ('pending', 'approved', 'rejected', 'scheduled', 'published');
+exception
+  when duplicate_object then null;
+end $$;
+
+create table if not exists content_posts (
+  id uuid primary key default gen_random_uuid(),
+  caption text,
+  target_platforms text[] not null default '{}',
+  status post_status not null default 'pending',
+  scheduled_at timestamptz,
+  buffer_update_ids text[],
+  review_note text,
+  created_by uuid references team_members(id) on delete set null,
+  reviewed_by uuid references team_members(id) on delete set null,
+  reviewed_at timestamptz,
+  scheduled_by uuid references team_members(id) on delete set null,
+  created_at timestamptz not null default now()
+);
+
+-- Arquivos de cada post (varios = carrossel)
+create table if not exists content_post_files (
+  id uuid primary key default gen_random_uuid(),
+  post_id uuid not null references content_posts(id) on delete cascade,
+  storage_path text not null,
+  file_type text not null,
+  position int not null default 0
+);
+
+-- Bucket "posts" no Storage do Supabase precisa existir (publico, ate 20MB por arquivo).
+
 create index if not exists idx_engagement_checks_post on engagement_checks(post_id);
 create index if not exists idx_engagement_checks_roster on engagement_checks(roster_id);
 create index if not exists idx_agenda_items_date on agenda_items(item_date);
+create index if not exists idx_content_posts_status on content_posts(status);
+create index if not exists idx_content_post_files_post on content_post_files(post_id);
 
 -- Bloqueia acesso direto via API pública do Supabase (anon/authenticated).
 -- O app só acessa essas tabelas pelo servidor, usando a service role key,
@@ -88,3 +129,5 @@ alter table engagement_roster enable row level security;
 alter table engagement_checks enable row level security;
 alter table agenda_items enable row level security;
 alter table idea_cards enable row level security;
+alter table content_posts enable row level security;
+alter table content_post_files enable row level security;

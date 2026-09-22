@@ -10,6 +10,7 @@ const ICONS: Record<Module, string> = {
   agenda: "📅",
   engajamento: "✅",
   ideias: "💡",
+  aprovacao: "🖼️",
   admin: "⚙️",
 };
 
@@ -17,6 +18,7 @@ const SHORT_LABELS: Record<Module, string> = {
   agenda: "Agenda",
   engajamento: "Engaj.",
   ideias: "Ideias",
+  aprovacao: "Posts",
   admin: "Admin",
 };
 

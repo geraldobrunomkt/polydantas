@@ -1,6 +1,11 @@
-export type MemberRole = "master" | "full" | "engagement_only" | "agenda_only";
+export type MemberRole =
+  | "master"
+  | "full"
+  | "engagement_only"
+  | "agenda_only"
+  | "approval_only";
 
-export type Module = "engajamento" | "agenda" | "ideias" | "admin";
+export type Module = "engajamento" | "agenda" | "ideias" | "admin" | "aprovacao";
 
 export interface TeamMember {
   id: string;
@@ -62,4 +67,30 @@ export const ROLE_LABELS: Record<MemberRole, string> = {
   full: "Acesso total",
   engagement_only: "Somente engajamento",
   agenda_only: "Somente agenda",
+  approval_only: "Somente aprovação de posts",
 };
+
+export type PostStatus = "pending" | "approved" | "rejected" | "scheduled" | "published";
+
+export interface ContentPost {
+  id: string;
+  caption: string | null;
+  target_platforms: string[];
+  status: PostStatus;
+  scheduled_at: string | null;
+  buffer_update_ids: string[] | null;
+  review_note: string | null;
+  created_by: string | null;
+  reviewed_by: string | null;
+  reviewed_at: string | null;
+  scheduled_by: string | null;
+  created_at: string;
+}
+
+export interface ContentPostFile {
+  id: string;
+  post_id: string;
+  storage_path: string;
+  file_type: string;
+  position: number;
+}

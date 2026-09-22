@@ -8,6 +8,7 @@ const DESCRIPTIONS: Record<string, string> = {
   agenda: "Compromissos da candidata: data, hora, local e ideia de conteúdo do dia.",
   engajamento: "Acompanhe quem comentou em cada post no grupo de engajamento.",
   ideias: "Post-its com ideias de conteúdo, sem compromisso.",
+  aprovacao: "Envie posts, aprove e agende para Instagram e TikTok.",
   admin: "Gerencie a equipe: nomes, funções e PINs.",
 };
 
@@ -15,6 +16,7 @@ const ICONS: Record<string, string> = {
   agenda: "📅",
   engajamento: "✅",
   ideias: "💡",
+  aprovacao: "🖼️",
   admin: "⚙️",
 };
 
@@ -22,6 +24,7 @@ const BADGE_STYLES: Record<string, string> = {
   agenda: "bg-brand-100 text-brand-700",
   engajamento: "bg-[#00ffe4]/20 text-brand-800",
   ideias: "bg-[#fff000]/30 text-brand-900",
+  aprovacao: "bg-pink-100 text-pink-700",
   admin: "bg-slate-100 text-slate-700",
 };
 
