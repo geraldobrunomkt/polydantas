@@ -145,8 +145,9 @@ export async function syncPublishedPosts() {
     await db.from("content_posts").update({ status: "published" }).eq("id", post.id);
     await removeFiles(post.id);
   }
-
-  revalidatePath(PATH);
+  // Sem revalidatePath aqui de proposito: essa funcao roda durante o
+  // carregamento da propria pagina (page.tsx ja busca os dados frescos logo
+  // em seguida), e chamar revalidatePath durante o render quebra o Next.js.
 }
 
 /**
