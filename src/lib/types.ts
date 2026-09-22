@@ -91,6 +91,7 @@ export interface ContentPostFile {
   id: string;
   post_id: string;
   storage_path: string;
+  provider: "supabase" | "drive";
   file_type: string;
   position: number;
 }

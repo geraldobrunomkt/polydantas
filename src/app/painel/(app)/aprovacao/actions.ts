@@ -3,6 +3,7 @@
 import { db } from "@/lib/supabase";
 import { requireMember, getCurrentMember } from "@/lib/session";
 import { createBufferUpdates } from "@/lib/buffer";
+import { uploadToDrive, deleteFromDrive, driveDirectUrl, driveConfigured } from "@/lib/googleDrive";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 
@@ -34,27 +35,49 @@ export async function submitPost(formData: FormData) {
   if (postError || !post) return { error: "Não foi possível criar o post." };
 
   let position = 0;
+  const errors: string[] = [];
   for (const file of files) {
-    const ext = file.name.split(".").pop() || "bin";
-    const path = `${post.id}/${position}-${Date.now()}.${ext}`;
-    const buf = Buffer.from(await file.arrayBuffer());
-    const { error: uploadError } = await db.storage.from(BUCKET).upload(path, buf, {
-      contentType: file.type || undefined,
-    });
-    if (uploadError) continue;
+    const isVideo = file.type.startsWith("video");
 
-    await db.from("content_post_files").insert({
-      post_id: post.id,
-      storage_path: path,
-      file_type: file.type.startsWith("video") ? "video" : "image",
-      position,
-    });
-    position++;
+    try {
+      if (isVideo && driveConfigured()) {
+        // Videos vao pro Drive: sem limite de 50MB do bucket do Supabase.
+        const { id } = await uploadToDrive(file);
+        await db.from("content_post_files").insert({
+          post_id: post.id,
+          storage_path: id,
+          provider: "drive",
+          file_type: "video",
+          position,
+        });
+      } else {
+        const ext = file.name.split(".").pop() || "bin";
+        const path = `${post.id}/${position}-${Date.now()}.${ext}`;
+        const buf = Buffer.from(await file.arrayBuffer());
+        const { error: uploadError } = await db.storage.from(BUCKET).upload(path, buf, {
+          contentType: file.type || undefined,
+        });
+        if (uploadError) {
+          errors.push(`${file.name}: ${uploadError.message}`);
+          continue;
+        }
+        await db.from("content_post_files").insert({
+          post_id: post.id,
+          storage_path: path,
+          provider: "supabase",
+          file_type: isVideo ? "video" : "image",
+          position,
+        });
+      }
+      position++;
+    } catch (e) {
+      errors.push(`${file.name}: ${e instanceof Error ? e.message : "erro desconhecido"}`);
+    }
   }
 
   if (position === 0) {
     await db.from("content_posts").delete().eq("id", post.id);
-    return { error: "Falha ao enviar os arquivos. Tente de novo." };
+    return { error: errors.join(" | ") || "Falha ao enviar os arquivos. Tente de novo." };
   }
 
   revalidatePath(PATH);
@@ -83,10 +106,16 @@ export async function reviewPost(id: string, approve: boolean, note?: string) {
 async function removeFiles(postId: string) {
   const { data: files } = await db
     .from("content_post_files")
-    .select("id, storage_path")
+    .select("id, storage_path, provider")
     .eq("post_id", postId);
   if (!files || files.length === 0) return 0;
-  await db.storage.from(BUCKET).remove(files.map((f) => f.storage_path));
+
+  const supabasePaths = files.filter((f) => f.provider !== "drive").map((f) => f.storage_path);
+  if (supabasePaths.length > 0) await db.storage.from(BUCKET).remove(supabasePaths);
+
+  const driveFiles = files.filter((f) => f.provider === "drive");
+  await Promise.all(driveFiles.map((f) => deleteFromDrive(f.storage_path).catch(() => {})));
+
   await db.from("content_post_files").delete().eq("post_id", postId);
   return files.length;
 }
@@ -117,7 +146,7 @@ export async function schedulePost(
 
   const { data: files } = await db
     .from("content_post_files")
-    .select("storage_path")
+    .select("storage_path, provider")
     .eq("post_id", id)
     .order("position");
 
@@ -127,8 +156,10 @@ export async function schedulePost(
     .eq("id", id)
     .single();
 
-  const mediaUrls = (files ?? []).map(
-    (f) => db.storage.from(BUCKET).getPublicUrl(f.storage_path).data.publicUrl
+  const mediaUrls = (files ?? []).map((f) =>
+    f.provider === "drive"
+      ? driveDirectUrl(f.storage_path)
+      : db.storage.from(BUCKET).getPublicUrl(f.storage_path).data.publicUrl
   );
 
   const result = await createBufferUpdates({
