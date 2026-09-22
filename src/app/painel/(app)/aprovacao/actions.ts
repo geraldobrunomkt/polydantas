@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/supabase";
 import { requireMember, getCurrentMember } from "@/lib/session";
-import { createBufferUpdates } from "@/lib/buffer";
+import { createBufferUpdates, isBufferUpdateSent } from "@/lib/buffer";
 import { uploadToDrive, deleteFromDrive, driveDirectUrl, driveConfigured } from "@/lib/googleDrive";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -121,11 +121,39 @@ async function removeFiles(postId: string) {
 }
 
 /**
- * Apaga só os arquivos de um post já agendado/publicado, mantendo o registro
- * (legenda, quando foi publicado etc.) no histórico. Não é automático de
- * propósito: o Buffer pode buscar a mídia só na hora exata de publicar, então
- * apagar cedo demais arriscaria quebrar um agendamento que ainda não saiu.
- * Use depois de confirmar que o post já foi ao ar.
+ * Confere no Buffer quais posts "agendados" ja foram publicados de verdade
+ * (nao so a hora do agendamento passou) e, so nesse caso, libera o espaco
+ * automaticamente. Chamado toda vez que a tela de Aprovacao carrega.
+ * Se o Buffer nao estiver configurado ou a consulta falhar, so ignora aquele
+ * post e tenta de novo no proximo carregamento - nunca apaga no escuro.
+ */
+export async function syncPublishedPosts() {
+  const { data: posts } = await db
+    .from("content_posts")
+    .select("id, buffer_update_ids")
+    .eq("status", "scheduled")
+    .not("buffer_update_ids", "is", null);
+
+  for (const post of posts ?? []) {
+    const ids = post.buffer_update_ids ?? [];
+    if (ids.length === 0) continue;
+
+    const results = await Promise.all(ids.map((id: string) => isBufferUpdateSent(id)));
+    if (results.some((r) => r === null)) continue; // consulta falhou, tenta de novo depois
+    if (!results.every((r) => r === true)) continue; // ainda nao publicou tudo
+
+    await db.from("content_posts").update({ status: "published" }).eq("id", post.id);
+    await removeFiles(post.id);
+  }
+
+  revalidatePath(PATH);
+}
+
+/**
+ * Apaga só os arquivos de um post manualmente, mantendo o registro (legenda,
+ * quando foi publicado etc.) no histórico. Complementa o syncPublishedPosts
+ * automático - útil se o Buffer não estiver configurado ou para casos em que
+ * a checagem automática ainda não rodou.
  */
 export async function freeUpSpace(id: string): Promise<{ freed: number }> {
   await requireMember("aprovacao");

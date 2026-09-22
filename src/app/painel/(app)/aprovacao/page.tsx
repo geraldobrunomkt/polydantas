@@ -4,6 +4,7 @@ import { db } from "@/lib/supabase";
 import { bufferConfigured } from "@/lib/buffer";
 import { driveDirectUrl } from "@/lib/googleDrive";
 import Board from "./board";
+import { syncPublishedPosts } from "./actions";
 import type { ContentPost, ContentPostFile } from "@/lib/types";
 
 const BUCKET = "posts";
@@ -11,6 +12,8 @@ const BUCKET = "posts";
 export default async function AprovacaoPage() {
   const member = await getCurrentMember();
   if (!member) redirect("/painel/login");
+
+  if (bufferConfigured()) await syncPublishedPosts();
 
   const [{ data: posts }, { data: files }] = await Promise.all([
     db.from("content_posts").select("*").order("created_at", { ascending: false }),

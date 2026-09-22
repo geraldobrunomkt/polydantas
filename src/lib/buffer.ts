@@ -68,3 +68,21 @@ export async function createBufferUpdates(opts: {
   const ids = (data.updates ?? []).map((u: { id: string }) => u.id);
   return { ids };
 }
+
+/**
+ * Consulta se um agendamento do Buffer ja foi publicado de verdade
+ * (nao so agendado). Usado pra so liberar o espaco em disco depois que
+ * o post realmente saiu no Instagram/TikTok, nao so quando foi agendado.
+ */
+export async function isBufferUpdateSent(updateId: string): Promise<boolean | null> {
+  const t = token();
+  if (!t) return null;
+
+  const res = await fetch(`${BASE}/updates/${updateId}.json?access_token=${t}`);
+  if (!res.ok) return null;
+
+  const data = await res.json();
+  // A API do Buffer marca publicado via status "sent" e/ou sent_at preenchido,
+  // dependendo da versao/tipo de conta. Checa os dois pra ser robusto.
+  return data.status === "sent" || !!data.sent_at;
+}
