@@ -175,7 +175,7 @@ function PostRow({
   const [isPending, startTransition] = useTransition();
   const [freed, setFreed] = useState(false);
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-3 flex gap-3 items-center">
+    <div className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-3 flex gap-3 items-center">
       <button onClick={onOpen} className="shrink-0 h-16 w-16 rounded-lg overflow-hidden bg-slate-100">
         {cover &&
           (cover.file_type === "video" ? (
@@ -469,7 +469,7 @@ function UploadForm({ onDone }: { onDone: () => void }) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+    <div className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 space-y-3">
       <input
         ref={fileInputRef}
         type="file"

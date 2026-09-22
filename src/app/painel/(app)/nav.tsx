@@ -37,7 +37,7 @@ export default function Nav({
       {/* Desktop sidebar */}
       <aside className="hidden sm:flex sm:flex-col sm:fixed sm:inset-y-0 sm:left-0 sm:w-20 lg:w-60 bg-brand-900 text-white z-20">
         <div className="flex items-center gap-2.5 px-4 h-16 shrink-0">
-          <span className="h-8 w-8 rounded-lg bg-white/10 flex items-center justify-center font-bold text-cyan-accent text-sm shrink-0">
+          <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-cyan-accent text-sm shrink-0">
             PD
           </span>
           <div className="hidden lg:block leading-tight">
@@ -53,7 +53,7 @@ export default function Nav({
               <Link
                 key={m}
                 href={MODULE_PATHS[m]}
-                className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition ${
+                className={`flex items-center gap-3 rounded-full px-3 py-2.5 text-sm font-medium transition ${
                   active
                     ? "bg-brand-600 text-white"
                     : "text-white/60 hover:bg-white/10 hover:text-white"
@@ -73,7 +73,7 @@ export default function Nav({
           <form action={logout}>
             <button
               type="submit"
-              className="w-full flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition"
+              className="w-full flex items-center gap-3 rounded-full px-3 py-2.5 text-sm font-medium text-white/60 hover:bg-white/10 hover:text-white transition"
             >
               <span className="text-base shrink-0">🚪</span>
               <span className="hidden lg:inline">Sair</span>
@@ -86,7 +86,7 @@ export default function Nav({
       <header className="sm:hidden sticky top-0 z-20 bg-brand-900 text-white">
         <div className="px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="h-7 w-7 rounded-lg bg-white/10 flex items-center justify-center font-bold text-cyan-accent text-xs">
+            <span className="h-7 w-7 rounded-full bg-white/10 flex items-center justify-center font-bold text-cyan-accent text-xs">
               PD
             </span>
             <span className="font-semibold text-sm">Olá, {firstName}</span>

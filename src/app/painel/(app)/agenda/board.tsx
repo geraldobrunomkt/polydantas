@@ -122,7 +122,7 @@ function ItemCard({ item }: { item: AgendaItem }) {
   }
 
   return (
-    <div className={`rounded-2xl border border-slate-200 bg-white p-4 ${isPending ? "opacity-60" : ""}`}>
+    <div className={`rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 ${isPending ? "opacity-60" : ""}`}>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <div className="flex items-center gap-2 text-sm text-slate-500">
@@ -174,7 +174,7 @@ function ItemForm({
   return (
     <form
       action={(fd) => startTransition(() => onSubmit(fd))}
-      className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3"
+      className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 space-y-3"
     >
       <div className="grid sm:grid-cols-2 gap-3">
         <div>

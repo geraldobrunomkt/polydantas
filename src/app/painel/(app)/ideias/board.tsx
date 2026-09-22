@@ -36,7 +36,7 @@ export default function Board({ ideas }: { ideas: IdeaCard[] }) {
         <p className="text-sm text-slate-500">Solte a ideia aqui, sem compromisso</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3">
+      <form onSubmit={handleSubmit} className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 space-y-3">
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}

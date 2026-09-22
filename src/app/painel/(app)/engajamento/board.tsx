@@ -107,7 +107,7 @@ function RosterManager({
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4 space-y-5">
+    <div className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 space-y-5">
       <div className="flex items-center justify-between">
         <h2 className="font-medium text-slate-700">Pessoas do grupo de engajamento</h2>
         <button onClick={onDone} className="text-sm text-slate-400 hover:text-slate-600">
@@ -201,7 +201,7 @@ function NewPostForm({ onDone }: { onDone: () => void }) {
           onDone();
         })
       }
-      className="rounded-2xl border border-slate-200 bg-white p-4 space-y-3"
+      className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 space-y-3"
     >
       <h2 className="font-medium text-slate-700">Novo post para monitorar</h2>
       <input
@@ -258,7 +258,7 @@ function PostCard({
   const complete = total > 0 && done === total;
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
+    <div className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4">
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
           <h3 className="font-medium text-slate-800">{post.title}</h3>

@@ -34,7 +34,7 @@ export default function Board({
           })
         }
         id="new-member-form"
-        className="rounded-2xl border border-slate-200 bg-white p-4 flex flex-wrap gap-3 items-end"
+        className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4 flex flex-wrap gap-3 items-end"
       >
         <div className="flex-1 min-w-[160px]">
           <label className="block text-xs font-medium text-slate-500 mb-1">Nome</label>
@@ -85,7 +85,7 @@ export default function Board({
         cadastrado aqui.
       </p>
 
-      <div className="rounded-2xl border border-slate-200 bg-white divide-y divide-slate-100">
+      <div className="rounded-3xl border border-slate-200/70 bg-white shadow-sm divide-y divide-slate-100">
         {members.map((m) => (
           <MemberRow key={m.id} member={m} isSelf={m.id === currentId} />
         ))}

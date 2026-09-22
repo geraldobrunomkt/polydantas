@@ -58,25 +58,15 @@ export default async function HomePage() {
       </h1>
       <p className="text-sm text-slate-500 mb-6">Aqui está um resumo de hoje.</p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
         <StatTile
           label="Compromissos futuros"
           value={upcoming ?? 0}
           icon="📅"
-          accent="bg-brand-600"
+          hero
         />
-        <StatTile
-          label="Posts monitorados"
-          value={posts ?? 0}
-          icon="✅"
-          accent="bg-slate-700"
-        />
-        <StatTile
-          label="Ideias soltas"
-          value={ideas ?? 0}
-          icon="💡"
-          accent="bg-amber-500"
-        />
+        <StatTile label="Posts monitorados" value={posts ?? 0} icon="✅" accent="bg-slate-800" />
+        <StatTile label="Ideias soltas" value={ideas ?? 0} icon="💡" accent="bg-amber-500" />
         {engagementRate !== null && (
           <StatTile
             label="Taxa de engajamento"
@@ -95,10 +85,10 @@ export default async function HomePage() {
           <Link
             key={m}
             href={MODULE_PATHS[m]}
-            className="rounded-2xl border border-slate-200 bg-white p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.98] transition"
+            className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-5 hover:border-brand-300 hover:shadow-md active:scale-[0.98] transition"
           >
             <div
-              className={`h-11 w-11 rounded-xl flex items-center justify-center text-lg mb-3 ${BADGE_STYLES[m]}`}
+              className={`h-11 w-11 rounded-full flex items-center justify-center text-lg mb-3 ${BADGE_STYLES[m]}`}
             >
               {ICONS[m]}
             </div>
@@ -116,20 +106,34 @@ function StatTile({
   value,
   icon,
   accent,
+  hero,
 }: {
   label: string;
   value: string | number;
   icon: string;
-  accent: string;
+  accent?: string;
+  hero?: boolean;
 }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 bg-white p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className={`h-9 w-9 rounded-lg flex items-center justify-center text-sm text-white ${accent}`}>
+  if (hero) {
+    return (
+      <div className="rounded-3xl bg-gradient-to-br from-brand-500 to-brand-800 shadow-md p-4 text-white">
+        <span className="h-9 w-9 rounded-full bg-white/15 flex items-center justify-center text-sm mb-3">
           {icon}
         </span>
+        <p className="text-3xl font-bold leading-none">{value}</p>
+        <p className="text-xs text-white/75 mt-1.5">{label}</p>
       </div>
-      <p className="text-2xl font-bold text-slate-800 leading-none">{value}</p>
+    );
+  }
+
+  return (
+    <div className="rounded-3xl border border-slate-200/70 bg-white shadow-sm p-4">
+      <span
+        className={`h-9 w-9 rounded-full flex items-center justify-center text-sm text-white mb-3 ${accent}`}
+      >
+        {icon}
+      </span>
+      <p className="text-3xl font-bold text-slate-800 leading-none">{value}</p>
       <p className="text-xs text-slate-500 mt-1.5">{label}</p>
     </div>
   );
